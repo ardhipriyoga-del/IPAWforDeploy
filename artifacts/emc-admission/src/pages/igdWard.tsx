@@ -645,7 +645,22 @@ export default function IGDWardPage() {
             minHeight="min-h-[100px]"
           />
 
-          {/* Row 3: Ward 1–5 */}
+          {/* Row 3: ED Transit */}
+          <WardBox
+            title="ED Transit"
+            wardKey="transit"
+            patients={sortByLongestWait(
+              transitColumns.flatMap((c) => c.patients),
+            )}
+            colorClass="border-teal-300 dark:border-teal-700"
+            headerBg="bg-teal-600"
+            onCardClick={setSelected}
+            minHeight="min-h-[100px]"
+            showDensity
+            showTransitBadge
+          />
+
+          {/* Row 4: Ward 1–5 */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {([1, 2, 3, 4, 5] as const).map((n) => (
               <WardBox
@@ -697,20 +712,6 @@ export default function IGDWardPage() {
             />
           </div>
 
-          {/* ── ED Transit (satu kotak, semua pasien transit di sini) ──────── */}
-          <WardBox
-            title="ED Transit"
-            wardKey="transit"
-            patients={sortByLongestWait(
-              transitColumns.flatMap((c) => c.patients),
-            )}
-            colorClass="border-teal-300 dark:border-teal-700"
-            headerBg="bg-teal-600"
-            onCardClick={setSelected}
-            minHeight="min-h-[100px]"
-            showDensity
-            showTransitBadge
-          />
 
         </div>
       )}
