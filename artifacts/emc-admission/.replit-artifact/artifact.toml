@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "EMC Admission"
+version = "1.0.0"
+id = "artifacts/emc-admission"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26052
+
+[services.development]
+run = "pnpm --filter @workspace/emc-admission run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/emc-admission", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/emc-admission/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26052"
+BASE_PATH = "/"

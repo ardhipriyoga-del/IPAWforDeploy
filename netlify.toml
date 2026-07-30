@@ -1,0 +1,40 @@
+# ─────────────────────────────────────────────────────────
+# Netlify Configuration — IP Admission Workspace
+#
+# Deployment architecture:
+#   Frontend  : Vite static build → artifacts/emc-admission/dist/public
+#   API       : Netlify Functions (serverless-http wrapping Express)
+#               /api/* → netlify/functions/api
+# ─────────────────────────────────────────────────────────
+
+[build]
+  # Build only the frontend. API function is bundled separately by Netlify.
+  command = "pnpm install && pnpm --filter @workspace/emc-admission run build"
+  publish = "artifacts/emc-admission/dist/public"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Tells the frontend that /api/* is served via Netlify Functions
+  VITE_HAS_API_PROXY = "true"
+  # Disable __IS_REPLIT__ (it reads REPL_ID which is absent on Netlify)
+  # BASE_PATH defaults to "/" in the GitHub vite.config.ts
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  # Include all server source files so esbuild can bundle them
+  included_files = ["artifacts/api-server/src/**"]
+
+# ── Route: all /api/* requests → Netlify Function ────────
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# ── SPA fallback: every other route → index.html ─────────
+# (app uses hash-based routing so this is mostly a safety net)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
