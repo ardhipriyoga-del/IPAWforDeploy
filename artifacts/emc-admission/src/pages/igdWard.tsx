@@ -70,14 +70,6 @@ function getEdTransitKey(lokasi: string): string | null {
   return null;
 }
 
-/** Human-readable label for a transit key, e.g. "transit-3" → "ED Transit 3" */
-function transitKeyToLabel(key: string): string {
-  if (key === 'transit') return 'ED Transit';
-  const m = key.match(/^transit-(\d+)$/);
-  if (m) return `ED Transit ${m[1]}`;
-  return key;
-}
-
 /** Sort order for transit keys: "transit" first, then numerically */
 function transitKeySortOrder(key: string): number {
   if (key === 'transit') return 0;
@@ -541,8 +533,6 @@ export default function IGDWardPage() {
     .sort(([a], [b]) => transitKeySortOrder(a) - transitKeySortOrder(b))
     .map(([key, pts]) => ({ key, patients: sortByLongestWait(pts) }));
 
-  const totalTransit = transitColumns.reduce((s, c) => s + c.patients.length, 0);
-
   const handleManualRefresh = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     loadData(false).then(() => {
@@ -707,82 +697,20 @@ export default function IGDWardPage() {
             />
           </div>
 
-          {/* ── ED Transit Section ──────────────────────────────────────────── */}
-          <div className="pt-2">
-            {/* Section heading */}
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-px flex-1 bg-teal-200 dark:bg-teal-800" />
-              <div className="flex items-center gap-2 px-3 py-1 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 rounded-full">
-                <ArrowRightLeft className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-                <span className="text-xs font-semibold text-teal-700 dark:text-teal-300">
-                  Area ED Transit
-                </span>
-                {totalTransit > 0 && (
-                  <span className="bg-teal-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                    {totalTransit}
-                  </span>
-                )}
-              </div>
-              <div className="h-px flex-1 bg-teal-200 dark:bg-teal-800" />
-            </div>
-
-            {/* Legend */}
-            <div className="flex items-center gap-3 mb-3 px-1">
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                Kepadatan:
-              </span>
-              {[
-                { dot: 'bg-green-400', label: 'Kosong' },
-                { dot: 'bg-yellow-400', label: '1–2 pasien' },
-                { dot: 'bg-red-400', label: '>2 pasien' },
-              ].map(({ dot, label }) => (
-                <span key={label} className="flex items-center gap-1">
-                  <span className={`inline-block h-2 w-2 rounded-full ${dot}`} />
-                  <span className="text-[10px] text-muted-foreground">{label}</span>
-                </span>
-              ))}
-            </div>
-
-            {transitColumns.length === 0 ? (
-              /* Empty state — show all 7 default columns as empty */
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-                {['transit', 'transit-1', 'transit-2', 'transit-3', 'transit-4', 'transit-5', 'transit-6'].map(
-                  (key) => (
-                    <WardBox
-                      key={key}
-                      title={transitKeyToLabel(key)}
-                      wardKey={key}
-                      patients={[]}
-                      colorClass="border-teal-200 dark:border-teal-800"
-                      headerBg="bg-teal-500"
-                      onCardClick={setSelected}
-                      minHeight="min-h-[120px]"
-                      showDensity
-                      showTransitBadge
-                    />
-                  ),
-                )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-                {transitColumns.map(({ key, patients: pts }) => (
-                  <WardBox
-                    key={key}
-                    title={transitKeyToLabel(key)}
-                    wardKey={key}
-                    patients={pts}
-                    colorClass="border-teal-200 dark:border-teal-800"
-                    headerBg="bg-teal-600"
-                    onCardClick={setSelected}
-                    minHeight="min-h-[120px]"
-                    showDensity
-                    showTransitBadge
-                  />
-                ))}
-              </div>
+          {/* ── ED Transit (satu kotak, semua pasien transit di sini) ──────── */}
+          <WardBox
+            title="ED Transit"
+            wardKey="transit"
+            patients={sortByLongestWait(
+              transitColumns.flatMap((c) => c.patients),
             )}
-          </div>
-          {/* ── End ED Transit ─────────────────────────────────────────────── */}
+            colorClass="border-teal-300 dark:border-teal-700"
+            headerBg="bg-teal-600"
+            onCardClick={setSelected}
+            minHeight="min-h-[100px]"
+            showDensity
+            showTransitBadge
+          />
 
         </div>
       )}
