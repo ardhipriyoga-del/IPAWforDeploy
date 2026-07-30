@@ -22,8 +22,10 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
-  # Include all server source files so esbuild can bundle them
-  included_files = ["artifacts/api-server/src/**"]
+  # 26 s — maximum allowed on Netlify Pro (free tier caps at 10 s).
+  # GAS requests are capped at 22 s in cloud.ts so they always finish
+  # before the function is killed.
+  timeout = 26
 
 # ── Route: all /api/* requests → Netlify Function ────────
 [[redirects]]

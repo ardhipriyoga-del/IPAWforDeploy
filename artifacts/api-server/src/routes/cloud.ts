@@ -9,7 +9,8 @@ async function fetchGAS(
   options: RequestInit,
 ): Promise<{ ok: boolean; status: number; body: string }> {
   const ctrl = new AbortController();
-  const timeout = setTimeout(() => ctrl.abort(), 30_000);
+  // 22 s — safely under the 26 s Netlify Function timeout cap
+  const timeout = setTimeout(() => ctrl.abort(), 22_000);
   try {
     const res = await fetch(url, { ...options, signal: ctrl.signal, redirect: "follow" });
     const body = await res.text();
@@ -54,7 +55,8 @@ async function fetchGASWithUrl(
   options: RequestInit,
 ): Promise<{ ok: boolean; status: number; body: string; finalUrl: string }> {
   const ctrl = new AbortController();
-  const timeout = setTimeout(() => ctrl.abort(), 30_000);
+  // 22 s — safely under the 26 s Netlify Function timeout cap
+  const timeout = setTimeout(() => ctrl.abort(), 22_000);
   try {
     const res = await fetch(url, { ...options, signal: ctrl.signal, redirect: "follow" });
     const body = await res.text();
@@ -106,7 +108,7 @@ router.get("/cloud/status", async (req, res) => {
       const r2 = await fetch(targetUrl, {
         method: "GET",
         redirect: "follow",
-        signal: new AbortController().signal,
+        signal: AbortSignal.timeout(10_000), // 10 s hard cap on fallback check
         headers: {
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
